@@ -1,111 +1,158 @@
-import { useState } from "react";
+// SnakeGame.jsx
+import React, { useState } from 'react';
+import './MazeGame.css';
 
 const numRows = 10;
 const numCols = 10;
 
-function createGrid() {
-  return Array(numRows).fill(null).map(() =>
-    Array(numCols).fill({
-      isStart: false,
-      isEnd: false,
-      isWall: false,
-      visited: false,
-      distance: Infinity,
-    })
-  );
-}
-
-export default function MazeGame() {
-  const [grid, setGrid] = useState(createGrid());
+const SnakeGame = () => {
+  const [grid, setGrid] = useState(createInitialGrid());
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
+  const [isRunning, setIsRunning] = useState(false);
 
-  function handleCellClick(row, col) {
-    const newGrid = grid.map(r => [...r]);
-    if (!start) {
-      newGrid[row][col] = { ...newGrid[row][col], isStart: true };
-      setStart({ row, col });
-    } else if (!end) {
-      newGrid[row][col] = { ...newGrid[row][col], isEnd: true };
-      setEnd({ row, col });
-    } else {
-      newGrid[row][col] = { ...newGrid[row][col], isWall: !newGrid[row][col].isWall };
-    }
-    setGrid(newGrid);
+  function createInitialGrid() {
+    return Array.from({ length: numRows }, (_, row) =>
+      Array.from({ length: numCols }, (_, col) => ({
+        row,
+        col,
+        isStart: false,
+        isEnd: false,
+        isVisited: false,
+        isPath: false,
+        isWall: false,
+        isHead: false,
+        distance: Infinity,
+        previous: null,
+      }))
+    );
   }
 
-  function dijkstra() {
+  const handleCellClick = (row, col, e) => {
+    e.preventDefault();
+    if (isRunning) return;
+    const newGrid = grid.map(r => r.map(cell => ({ ...cell })));
+    const cell = newGrid[row][col];
+
+    if (e.type === 'contextmenu') {
+      if (!cell.isStart && !cell.isEnd) cell.isWall = !cell.isWall;
+    } else if (!start) {
+      cell.isStart = true;
+      setStart({ row, col });
+    } else if (!end && !cell.isStart) {
+      cell.isEnd = true;
+      setEnd({ row, col });
+    }
+
+    setGrid(newGrid);
+  };
+
+  const runSnake = () => {
     if (!start || !end) {
-      alert("Set both start and end points.");
+      alert('Set both start and end points.');
       return;
     }
 
-    const newGrid = grid.map(r => [...r]);
-    const visited = Array(numRows).fill(null).map(() => Array(numCols).fill(false));
-    const distances = Array(numRows).fill(null).map(() => Array(numCols).fill(Infinity));
-    const queue = [];
+    setIsRunning(true);
+    const newGrid = grid.map(r => r.map(cell => ({ ...cell })));
+    const startNode = newGrid[start.row][start.col];
+    const endNode = newGrid[end.row][end.col];
 
-    const { row: sr, col: sc } = start;
-    distances[sr][sc] = 0;
-    queue.push({ row: sr, col: sc, dist: 0 });
+    const visitedNodes = dijkstra(newGrid, startNode, endNode);
+    const path = getNodesInShortestPathOrder(endNode);
+    animateSnake(path, newGrid);
+  };
 
-    const directions = [[1,0],[-1,0],[0,1],[0,-1]];
-
-    while (queue.length > 0) {
-      queue.sort((a, b) => a.dist - b.dist);
-      const { row, col, dist } = queue.shift();
-      if (visited[row][col]) continue;
-      visited[row][col] = true;
-
-      newGrid[row][col] = { ...newGrid[row][col], visited: true };
-
-      if (row === end.row && col === end.col) {
-        alert("Path found!");
-        break;
-      }
-
-      for (let [dr, dc] of directions) {
-        const nr = row + dr, nc = col + dc;
-        if (
-          nr >= 0 && nc >= 0 && nr < numRows && nc < numCols &&
-          !visited[nr][nc] &&
-          !newGrid[nr][nc].isWall
-        ) {
-          const newDist = dist + 1;
-          if (newDist < distances[nr][nc]) {
-            distances[nr][nc] = newDist;
-            queue.push({ row: nr, col: nc, dist: newDist });
-          }
+  const animateSnake = (path, gridCopy) => {
+    path.forEach((node, i) => {
+      setTimeout(() => {
+        if (i > 0) {
+          const prev = path[i - 1];
+          gridCopy[prev.row][prev.col].isHead = false;
+          gridCopy[prev.row][prev.col].isVisited = true;
         }
-      }
-    }
-
-    setGrid(newGrid);
-  }
+        gridCopy[node.row][node.col].isHead = true;
+        setGrid([...gridCopy]);
+        if (i === path.length - 1) setIsRunning(false);
+      }, 200 * i);
+    });
+  };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">🧭 Maze Solver – Dijkstra</h2>
-      <button onClick={dijkstra} className="bg-blue-600 text-white px-4 py-2 mb-4">Run Dijkstra</button>
-      <div className="grid grid-cols-10 gap-1">
-        {grid.map((row, rIdx) =>
-          row.map((cell, cIdx) => {
-            let bg = "bg-white";
-            if (cell.isStart) bg = "bg-green-400";
-            else if (cell.isEnd) bg = "bg-red-400";
-            else if (cell.isWall) bg = "bg-black";
-            else if (cell.visited) bg = "bg-yellow-300";
-
-            return (
-              <div
-                key={`${rIdx}-${cIdx}`}
-                className={`w-8 h-8 border ${bg} cursor-pointer`}
-                onClick={() => handleCellClick(rIdx, cIdx)}
-              ></div>
-            );
-          })
+    <div>
+      <h2 className="text-xl font-bold mb-4">🐍 Snake Pathfinding Game</h2>
+      <div className="grid-container">
+        {grid.map((row, rowIndex) =>
+          row.map((cell, colIndex) => (
+            <div
+              key={`${rowIndex}-${colIndex}`}
+              className={`cell
+                ${cell.isStart ? 'start' : ''}
+                ${cell.isEnd ? 'end' : ''}
+                ${cell.isVisited ? 'visited' : ''}
+                ${cell.isWall ? 'wall' : ''}
+                ${cell.isHead ? 'snake-head' : ''}
+              `}
+              onClick={(e) => handleCellClick(rowIndex, colIndex, e)}
+              onContextMenu={(e) => handleCellClick(rowIndex, colIndex, e)}
+            ></div>
+          ))
         )}
       </div>
+      <button className="run-btn" onClick={runSnake} disabled={isRunning}>
+        Run Snake
+      </button>
     </div>
-);
+  );
+};
+
+function dijkstra(grid, startNode, endNode) {
+  const visitedNodesInOrder = [];
+  startNode.distance = 0;
+  const unvisitedNodes = getAllNodes(grid);
+
+  while (unvisitedNodes.length) {
+    unvisitedNodes.sort((a, b) => a.distance - b.distance);
+    const closestNode = unvisitedNodes.shift();
+    if (closestNode.isWall) continue;
+    if (closestNode.distance === Infinity) return visitedNodesInOrder;
+    closestNode.isVisited = true;
+    visitedNodesInOrder.push(closestNode);
+    if (closestNode === endNode) return visitedNodesInOrder;
+    updateUnvisitedNeighbors(closestNode, grid);
+  }
+  return visitedNodesInOrder;
 }
+
+function getAllNodes(grid) {
+  return grid.flat();
+}
+
+function updateUnvisitedNeighbors(node, grid) {
+  const { row, col } = node;
+  const neighbors = [];
+  if (row > 0) neighbors.push(grid[row - 1][col]);
+  if (row < numRows - 1) neighbors.push(grid[row + 1][col]);
+  if (col > 0) neighbors.push(grid[row][col - 1]);
+  if (col < numCols - 1) neighbors.push(grid[row][col + 1]);
+  neighbors.forEach(neighbor => {
+    if (!neighbor.isVisited && !neighbor.isWall) {
+      if (node.distance + 1 < neighbor.distance) {
+        neighbor.distance = node.distance + 1;
+        neighbor.previous = node;
+      }
+    }
+  });
+}
+
+function getNodesInShortestPathOrder(endNode) {
+  const path = [];
+  let current = endNode;
+  while (current) {
+    path.unshift(current);
+    current = current.previous;
+  }
+  return path;
+}
+
+export default SnakeGame;

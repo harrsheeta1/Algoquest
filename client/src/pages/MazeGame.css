@@ -1,0 +1,42 @@
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(10, 30px);
+  grid-gap: 2px;
+  margin-bottom: 1rem;
+}
+
+.cell {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ddd;
+  background-color: white;
+}
+
+.cell.start {
+  background-color: green;
+}
+
+.cell.end {
+  background-color: red;
+}
+
+.cell.visited {
+  background-color: lightblue;
+}
+
+.cell.wall {
+  background-color: black;
+}
+
+.cell.snake-head {
+  background-color: limegreen;
+}
+
+.run-btn {
+  padding: 10px 20px;
+  border: 2px solid black;
+  background: white;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 6px;
+}

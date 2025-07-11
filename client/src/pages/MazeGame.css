@@ -1,8 +1,12 @@
 .grid-container {
   display: grid;
   grid-template-columns: repeat(10, 30px);
+  grid-template-rows: repeat(10, 30px);
   grid-gap: 2px;
-  margin-bottom: 1rem;
+  margin: 1rem auto;
+  transform: perspective(700px) rotateX(25deg);
+  transform-style: preserve-3d;
+  transition: all 0.3s ease;
 }
 
 .cell {
@@ -10,6 +14,13 @@
   height: 30px;
   border: 1px solid #ddd;
   background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
 }
 
 .cell.start {
@@ -32,6 +43,21 @@
   background-color: limegreen;
 }
 
+.cell img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  pointer-events: none;
+  animation: bounce 0.3s ease-in-out;
+}
+
+/* Bounce animation for boy movement */
+@keyframes bounce {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-5px); }
+  100% { transform: translateY(0); }
+}
+
 .run-btn {
   padding: 10px 20px;
   border: 2px solid black;
@@ -39,4 +65,9 @@
   cursor: pointer;
   font-weight: bold;
   border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.run-btn:hover {
+  background-color: #eee;
 }

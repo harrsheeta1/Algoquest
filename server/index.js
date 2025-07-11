@@ -15,3 +15,6 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api/auth', require('./routes/auth'));
 
 app.listen(5000, () => console.log("Server started on port 5000"));
+
+const progressRoutes = require('./routes/progressRoutes');
+app.use('/api', progressRoutes);

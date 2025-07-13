@@ -1,0 +1,70 @@
+.sudoku-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+.sudoku-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 2px;
+  border: 2px solid #333;
+  margin-top: 1rem;
+}
+
+.sudoku-row {
+  display: contents; /* Allows full grid layout */
+}
+
+.sudoku-cell {
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  text-align: center;
+  border: 1px solid #aaa;
+  outline: none;
+  background-color: #f9f9f9;
+  transition: background-color 0.2s ease;
+}
+
+.sudoku-cell:focus {
+  background-color: #e0f0ff;
+  border: 2px solid #007bff;
+}
+
+.sudoku-cell:nth-child(3n) {
+  border-right: 2px solid #000;
+}
+
+.sudoku-row:nth-child(3n) .sudoku-cell {
+  border-bottom: 2px solid #000;
+}
+/* Theme Support */
+.sudoku-container.light {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.sudoku-container.dark {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+}
+
+.sudoku-container.dark .sudoku-cell {
+  background-color: #333;
+  color: #fff;
+  border-color: #555;
+}
+
+.sudoku-container.light .sudoku-cell {
+  background-color: #fff;
+  color: #000;
+  border-color: #ccc;
+}
+
+/* Optional: fix for fixed-cell appearance in both themes */
+.fixed-cell {
+  background-color: #d1d5db !important;
+  font-weight: bold;
+}

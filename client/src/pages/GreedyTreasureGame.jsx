@@ -15,9 +15,7 @@ const MinCostPathGame = () => {
   const [minPathSum, setMinPathSum] = useState(null);
 
   useEffect(() => {
-    if (gameMode === 'random') {
-      generateRandomGrid(difficulty);
-    }
+    if (gameMode === 'random') generateRandomGrid(difficulty);
   }, [gameMode, difficulty]);
 
   function createInitialGrid() {
@@ -31,10 +29,11 @@ const MinCostPathGame = () => {
         isPath: false,
         isWall: false,
         isBoy: false,
+        isMinPath: false,
+        isGreedyPath: false,
         distance: Infinity,
         previous: null,
         value: 1,
-        isMinPath: false, // <-- added
       }))
     );
   }
@@ -117,45 +116,53 @@ const MinCostPathGame = () => {
   };
 
   const runSnake = () => {
-    if (gameMode === 'random') {
-      setTimeout(() => {
-        const newGrid = grid.map(r => r.map(cell => ({ ...cell, isMinPath: false })));
-        const startNode = newGrid.flat().find(cell => cell.isStart);
-        const endNode = newGrid.flat().find(cell => cell.isEnd);
+    if (!start || !end) return alert('Set start and end points.');
+    const newGrid = grid.map(r => r.map(cell => ({ ...cell })));
+    runPathfindingHelper(newGrid, newGrid[start.row][start.col], newGrid[end.row][end.col]);
+  };
 
-        if (!startNode || !endNode) {
-          alert('Start or End not found in random grid.');
-          return;
-        }
-
-        setStart({ row: startNode.row, col: startNode.col });
-        setEnd({ row: endNode.row, col: endNode.col });
-
-        runPathfindingHelper(newGrid, startNode, endNode);
-      }, 300);
-    } else {
-      if (!start || !end) {
-        alert('Set both start and end points.');
-        return;
-      }
-
-      const newGrid = grid.map(r => r.map(cell => ({ ...cell, isMinPath: false })));
-      const startNode = newGrid[start.row][start.col];
-      const endNode = newGrid[end.row][end.col];
-      runPathfindingHelper(newGrid, startNode, endNode);
-    }
+  const runGreedyCoinCollection = () => {
+    if (!start || !end) return alert('Set start and end points.');
+    const newGrid = grid.map(r => r.map(cell => ({ ...cell })));
+    runGreedyHelper(newGrid, newGrid[start.row][start.col], newGrid[end.row][end.col]);
   };
 
   const runPathfindingHelper = (gridToUse, startNode, endNode) => {
     setIsRunning(true);
-    const visitedNodes = dijkstra(gridToUse, startNode, endNode);
+    clearPathFlags(gridToUse);
+    dijkstra(gridToUse, startNode, endNode);
     const path = getNodesInShortestPathOrder(endNode);
-    animateSnake(path, gridToUse);
+    animateSnake(path, gridToUse, 'min');
     const pathSum = path.reduce((sum, node) => sum + node.value, 0);
     setMinPathSum(pathSum);
   };
 
-  const animateSnake = (path, gridCopy) => {
+  const runGreedyHelper = (gridToUse, startNode, endNode) => {
+    setIsRunning(true);
+    clearPathFlags(gridToUse);
+    const path = greedyCoinPath(gridToUse, startNode, endNode);
+    if (path.length === 0) {
+      alert("No path to the end node found.");
+      setIsRunning(false);
+      return;
+    }
+    animateSnake(path, gridToUse, 'greedy');
+    const coinSum = path.reduce((sum, node) => sum + node.value, 0);
+    setMinPathSum(coinSum);
+  };
+
+  const clearPathFlags = (grid) => {
+    grid.forEach(row => {
+      row.forEach(cell => {
+        cell.isBoy = false;
+        cell.isVisited = false;
+        cell.isMinPath = false;
+        cell.isGreedyPath = false;
+      });
+    });
+  };
+
+  const animateSnake = (path, gridCopy, pathType) => {
     path.forEach((node, i) => {
       setTimeout(() => {
         if (i > 0) {
@@ -164,114 +171,108 @@ const MinCostPathGame = () => {
           gridCopy[prev.row][prev.col].isVisited = true;
         }
         gridCopy[node.row][node.col].isBoy = true;
-        gridCopy[node.row][node.col].isMinPath = true; // mark min path
+        if (pathType === 'min') gridCopy[node.row][node.col].isMinPath = true;
+        else if (pathType === 'greedy') gridCopy[node.row][node.col].isGreedyPath = true;
         setGrid([...gridCopy]);
         if (i === path.length - 1) setIsRunning(false);
-      }, 200 * i);
+      }, 150 * i);
     });
   };
 
   return (
     <div className="main-container">
-      <h2 className="text-xl font-bold mb-2">📍 Minimum Cost Path Game</h2>
+      <h2 className="text-xl font-bold mb-2">📍 Minimum Cost vs Greedy Coin Path</h2>
 
-      <select className="mb-4 p-2 border" value={gameMode} onChange={(e) => setGameMode(e.target.value)}>
+      <select value={gameMode} onChange={e => setGameMode(e.target.value)}>
         <option value="manual">Manual Mode</option>
         <option value="random">Random Mode</option>
       </select>
 
       {gameMode === 'random' && (
-        <div className="mb-4">
-          <label className="mr-2 font-semibold">Select Level:</label>
-          <select className="p-2 border" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
+        <select value={difficulty} onChange={e => setDifficulty(e.target.value)}>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
       )}
 
       <div className="grid-container">
-        {grid.map((row, rowIndex) =>
-          row.map((cell, colIndex) => (
+        {grid.map((row, rowIdx) =>
+          row.map((cell, colIdx) => (
             <div
-              key={`${rowIndex}-${colIndex}`}
+              key={`${rowIdx}-${colIdx}`}
               className={`cell
                 ${cell.isStart ? 'start' : ''}
                 ${cell.isEnd ? 'end' : ''}
-                ${cell.isVisited ? 'visited' : ''}
                 ${cell.isWall ? 'wall' : ''}
                 ${cell.isMinPath ? 'minpath' : ''}
+                ${cell.isGreedyPath ? 'greedy' : ''}
               `}
-              onClick={(e) => handleCellClick(rowIndex, colIndex, e)}
-              onContextMenu={(e) => handleCellClick(rowIndex, colIndex, e)}
+              onClick={e => handleCellClick(rowIdx, colIdx, e)}
+              onContextMenu={e => handleCellClick(rowIdx, colIdx, e)}
             >
               {cell.isBoy ? (
-                <img src={boyGif} alt="boy" style={{ width: '30px', height: '30px' }} />
+                <img src={boyGif} alt="boy" style={{ width: '30px' }} />
               ) : (!cell.isWall && cell.value !== 0 ? cell.value : '')}
             </div>
           ))
         )}
       </div>
 
-      {minPathSum !== null && (
-        <div className="mt-4 text-green-700 font-semibold">
-          ✅ Minimum path sum: {minPathSum}
-        </div>
-      )}
-
       <div className="flex gap-2 mt-4">
-        <button className="run-btn" onClick={runSnake} disabled={isRunning}>
-          Run Pathfinding
-        </button>
-        <button className="run-btn bg-red-500 hover:bg-red-600" onClick={resetGrid}>
-          Reset Grid
-        </button>
+        <button onClick={runSnake} disabled={isRunning}>Run Min Cost Path</button>
+        <button onClick={runGreedyCoinCollection} disabled={isRunning}>Run Greedy Coin</button>
+        <button onClick={resetGrid}>Reset</button>
       </div>
+
+      {minPathSum !== null && (
+        <div className="mt-4 text-green-700 font-semibold">✅ Path sum: {minPathSum}</div>
+      )}
     </div>
   );
 };
 
-// ---------- Dijkstra Functions ----------
+// === Dijkstra ===
 
 function dijkstra(grid, startNode, endNode) {
-  const visitedNodesInOrder = [];
+  const unvisited = getAllNodes(grid);
   startNode.distance = 0;
-  const unvisitedNodes = getAllNodes(grid);
 
-  while (unvisitedNodes.length) {
-    unvisitedNodes.sort((a, b) => a.distance - b.distance);
-    const closestNode = unvisitedNodes.shift();
-    if (closestNode.isWall) continue;
-    if (closestNode.distance === Infinity) return visitedNodesInOrder;
-    closestNode.isVisited = true;
-    visitedNodesInOrder.push(closestNode);
-    if (closestNode === endNode) return visitedNodesInOrder;
-    updateUnvisitedNeighbors(closestNode, grid);
+  while (unvisited.length) {
+    unvisited.sort((a, b) => a.distance - b.distance);
+    const closest = unvisited.shift();
+    if (closest.isWall) continue;
+    if (closest.distance === Infinity) break;
+
+    closest.isVisited = true;
+    if (closest === endNode) return;
+    updateUnvisitedNeighbors(closest, grid);
   }
-  return visitedNodesInOrder;
-}
-
-function getAllNodes(grid) {
-  return grid.flat();
 }
 
 function updateUnvisitedNeighbors(node, grid) {
+  const neighbors = getValidNeighbors(node, grid);
+  for (let neighbor of neighbors) {
+    const cost = node.distance + neighbor.value;
+    if (cost < neighbor.distance) {
+      neighbor.distance = cost;
+      neighbor.previous = node;
+    }
+  }
+}
+
+function getValidNeighbors(node, grid) {
   const { row, col } = node;
   const neighbors = [];
   if (row > 0) neighbors.push(grid[row - 1][col]);
   if (row < numRows - 1) neighbors.push(grid[row + 1][col]);
   if (col > 0) neighbors.push(grid[row][col - 1]);
   if (col < numCols - 1) neighbors.push(grid[row][col + 1]);
-  neighbors.forEach(neighbor => {
-    if (!neighbor.isVisited && !neighbor.isWall) {
-      const cost = node.distance + neighbor.value;
-      if (cost < neighbor.distance) {
-        neighbor.distance = cost;
-        neighbor.previous = node;
-      }
-    }
-  });
+  return neighbors.filter(n => !n.isWall);
+}
+
+function getAllNodes(grid) {
+  return grid.flat();
 }
 
 function getNodesInShortestPathOrder(endNode) {
@@ -282,6 +283,48 @@ function getNodesInShortestPathOrder(endNode) {
     current = current.previous;
   }
   return path;
+}
+
+// === Greedy ===
+
+function greedyCoinPath(grid, startNode, endNode) {
+  const visited = new Set();
+  const key = (r, c) => `${r}-${c}`;
+  const pathMap = new Map();
+  const openList = [startNode];
+
+  visited.add(key(startNode.row, startNode.col));
+  pathMap.set(key(startNode.row, startNode.col), null);
+
+  while (openList.length) {
+    openList.sort((a, b) => (b.value + heuristic(b, endNode)) - (a.value + heuristic(a, endNode)));
+    const current = openList.shift();
+    const currKey = key(current.row, current.col);
+    if (current === endNode) {
+      const path = [];
+      let k = currKey;
+      while (k) {
+        const [r, c] = k.split('-').map(Number);
+        path.unshift(grid[r][c]);
+        k = pathMap.get(k);
+      }
+      return path;
+    }
+
+    for (let neighbor of getValidNeighbors(current, grid)) {
+      const nKey = key(neighbor.row, neighbor.col);
+      if (!visited.has(nKey)) {
+        visited.add(nKey);
+        pathMap.set(nKey, currKey);
+        openList.push(neighbor);
+      }
+    }
+  }
+  return [];
+}
+
+function heuristic(a, b) {
+  return -1 * (Math.abs(a.row - b.row) + Math.abs(a.col - b.col));
 }
 
 export default MinCostPathGame;

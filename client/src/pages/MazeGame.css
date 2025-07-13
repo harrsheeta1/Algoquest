@@ -1,3 +1,29 @@
+/* Fullscreen centering */
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+
+.cell.minpath {
+  background-color: gold;
+}
+
+.cell.greedy {
+  background-color: rgba(255, 215, 0, 0.5); /* Gold */
+}
+
 .grid-container {
   display: grid;
   grid-template-columns: repeat(10, 30px);

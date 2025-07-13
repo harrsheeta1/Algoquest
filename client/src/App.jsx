@@ -2,13 +2,16 @@ import { Routes, Route } from 'react-router-dom';
 import Auth from './pages/Auth'; // this handles both login & register
 import Dashboard from './pages/Dashboard';
 import MazeGame from './pages/MazeGame';
-
+import GreedyTreasureGame from './pages/GreedyTreasureGame';
+import SudokuSolver from './pages/SudokuSolver';
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Auth />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/maze" element={<MazeGame />} />
+      <Route path="/sudoku" element={<SudokuSolver />} />
+      <Route path="/greedy" element={<GreedyTreasureGame />} />
     </Routes>
   );
 }

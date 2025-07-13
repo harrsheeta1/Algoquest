@@ -32,12 +32,18 @@ export default function Dashboard() {
         >
           🔒 Knapsack Challenge (DP) – Coming soon
         </button>
-        <button
-          className="bg-gray-300 text-gray-700 px-4 py-2 rounded cursor-not-allowed"
-          disabled
-        >
-          🔒 Greedy Scheduling – Coming soon
-        </button>
+         <button
+        onClick={() => navigate("/greedy")}
+        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded"
+      >
+        💰 Greedy Treasure Game
+      </button>
+      <button
+    onClick={() => navigate("/sudoku")}
+    className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded"
+  >
+    🧩 Sudoku Solver
+  </button>
       </div>
     </div>
   );

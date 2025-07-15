@@ -27,11 +27,11 @@ export default function Dashboard() {
 
         {/* Future games */}
         <button
-          className="bg-gray-300 text-gray-700 px-4 py-2 rounded cursor-not-allowed"
-          disabled
-        >
-          🔒 Knapsack Challenge (DP) – Coming soon
-        </button>
+    onClick={() => navigate("/knapsack")}
+    className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded"
+  >
+    🎒 Knapsack Challenge (DP)
+  </button>
          <button
         onClick={() => navigate("/greedy")}
         className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded"

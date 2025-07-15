@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import MazeGame from './pages/MazeGame';
 import GreedyTreasureGame from './pages/GreedyTreasureGame';
 import SudokuSolver from './pages/SudokuSolver';
+import KnapsackChallenge from './pages/KnapsackChallenge';
 export default function App() {
   return (
     <Routes>
@@ -12,6 +13,7 @@ export default function App() {
       <Route path="/maze" element={<MazeGame />} />
       <Route path="/sudoku" element={<SudokuSolver />} />
       <Route path="/greedy" element={<GreedyTreasureGame />} />
+      <Route path="/knapsack" element={<KnapsackChallenge />} />
     </Routes>
   );
 }

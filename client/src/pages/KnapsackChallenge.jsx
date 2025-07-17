@@ -1,6 +1,6 @@
 // KnapsackChallenge.jsx
 import React, { useState, useEffect } from 'react';
-import './KnapsackChallenge.css';
+import '../styles/KnapsackChallenge.css';
 
 const generateItems = (count) => {
   return Array.from({ length: count }, (_, i) => ({

@@ -1,6 +1,6 @@
 // SudokuSolver.jsx (Enhanced with Timer, Score, Theme Toggle)
 import React, { useState, useEffect } from 'react';
-import './SudokuSolver.css';
+import '../styles/SudokuSolver.css';
 
 const emptyGrid = () => Array.from({ length: 9 }, () => Array(9).fill(''));
 

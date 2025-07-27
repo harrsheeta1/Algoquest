@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import "../styles/MazeGame.css";
+
 import boyGif from '../assets/boy.gif';
 
 const numRows = 10;

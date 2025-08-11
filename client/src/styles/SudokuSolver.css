@@ -3,6 +3,7 @@
   margin: 2rem auto;
   text-align: center;
   font-family: sans-serif;
+  background: linear-gradient(145deg, #f1f4ff, #e4e8ff);
 }
 
 .sudoku-grid {

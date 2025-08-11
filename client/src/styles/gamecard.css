@@ -48,3 +48,10 @@
 }
 
 
+/* gamecard.css */
+.game-card img {
+  width: 450px;       /* set desired width */
+  height: 260px;      /* set desired height */
+  object-fit: cover;  /* crop to fill area without distortion */
+  border-radius: 10px; /* optional: rounded corners */
+}

@@ -11,8 +11,8 @@ const Approutes = () => {
     <Routes>
       <Route path="/" element={<Auth />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/maze" element={<MazeGame />} />
-      <Route path="/sudoku" element={<SudokuSolver />} />
+      <Route path="/maze-game" element={<MazeGame />} />
+      <Route path="/sudoku-solver" element={<SudokuSolver />} />
       <Route path="/greedy" element={<GreedyTreasureGame />} />
       <Route path="/knapsack" element={<KnapsackChallenge />} />
     </Routes>

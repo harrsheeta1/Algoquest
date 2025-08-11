@@ -43,8 +43,9 @@
 
 import React from "react";
 import "../styles/gamecard.css"; // Assuming you have a CSS file for styling
-
-const GameCard = ({ title, image, description,path }) => {
+import { useNavigate } from "react-router-dom";
+const GameCard = ({ title,image,description,path }) => {
+   const navigate = useNavigate();
   return (
     <div className="game-card">
       <img src={image} alt={title} />
@@ -54,8 +55,8 @@ const GameCard = ({ title, image, description,path }) => {
         <br/>
      <button
     className="play-button"
-    onClick={() => window.location.href = `/pages/${path}`}>
-    Play
+    onClick={ () => navigate(path)}>
+     Play
     </button>
     </div>
 
